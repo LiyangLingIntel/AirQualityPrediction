@@ -1,0 +1,6 @@
+data/
+.vscode
+__pycache__
+report_rc/
+.DS_Store
+outputs/
