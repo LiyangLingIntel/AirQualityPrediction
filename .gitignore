@@ -4,3 +4,7 @@ __pycache__
 report_rc/
 .DS_Store
 outputs/
+models/
+useless_model/
+submission/
+*/.ipynb_checkpoints/

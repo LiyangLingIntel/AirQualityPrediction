@@ -5,7 +5,7 @@ import datetime
 import pandas as pd
 import numpy as np
 
-from settings import data_root, output_folder
+from settings import data_root, output_folder, station_angle, station_dist
 
 
 def load_data(file_names):
@@ -168,4 +168,83 @@ def get_time_label(time: str, periodicity=False):
     return label
 
 
+def get_periodic_time_label(time: str):
+    '''
+    time: 12:00:00
+    according to the hottest temperature at 14:00,
+    02:00 - 14:00 0 --> 12
+    14:00 - 02:00 11 --> 0
+    '''
+    hour = int(time.split(':')[0])
+    #  2-->14  convert to 0-->12
+    hour = hour-2 if hour-2>=0 else 24-(2-hour)
+    size = 24
+    period_param = math.sin((hour/24)*math.pi)
+    label = size * period_param
+    
+    return label
+
 # print(get_time_label('04:00:00'))
+
+def cal_wind_projection(s1, s2, ws, wd):
+    angle_name = f'{s1}-{s2}'
+    angle = station_angle[angle_name]
+
+    if wd > 360 or ws < 0.5:
+        return 0
+    else:
+        included_angle = wd - angle
+        projection_rate = math.cos(math.pi*included_angle/180)
+        if projection_rate <= 0:
+            return 0
+        else:
+            return ws*projection_rate
+
+
+def get_max_dist(station, stations):
+    stations = [i for i in stations if i != station]
+    station_pairs = [sorted([station, i]) for i in stations]
+    station_dists = [station_dist[f'{i[0]}-{i[1]}'] for i in station_pairs]
+    return max(station_dists)
+
+
+def construct_train_xy(df, target_station, station_list, only_x=False):
+    if only_x:
+        input_cols = ['station_id', 'test_id', 'temperature', 'pressure', 'humidity',
+                      'periodic_solar_term', 'periodic_time', 'NearTraffic', 'Others', 'SubUrban', 'Urban', 'wind_speed']
+    else:
+        input_cols = ['station_id', 'temperature', 'pressure', 'humidity',
+                      'periodic_solar_term', 'periodic_time', 'NearTraffic', 'Others', 'SubUrban', 'Urban', 'wind_speed']
+    output_cols = ['PM2.5', 'PM10', 'O3']
+    useful_cols = ['temperature', 'pressure', 'humidity', 'wind_speed', 'wind_direction']
+
+    qry = f'station_id=="{target_station}"'
+    input_df = df.query(qry)[input_cols]
+    input_df = input_df.reset_index().drop('index', axis=1)     # index other_df will make column cannot be combined
+    
+    max_dist = get_max_dist(target_station, station_list)
+    for station in station_list:
+        if station == target_station:
+            continue
+        short_stt = station.split('_')[0]
+        station_pair = sorted([target_station, station])
+        dist = station_dist[f'{station_pair[0]}-{station_pair[1]}']
+        dist_rate = 1 - (dist/max_dist)
+        
+        qry = f'station_id=="{station}"'
+        other_df = df.query(qry)[useful_cols]
+        other_df = other_df.reset_index().drop('index', axis=1)
+
+        input_df[f'{short_stt}_temperature'] = other_df['temperature'] * dist_rate
+        input_df[f'{short_stt}_pressure'] = other_df['pressure'] * dist_rate
+        input_df[f'{short_stt}_humidity'] = other_df['humidity'] * dist_rate
+        
+        wind_info = other_df[['wind_speed', 'wind_direction']].values.tolist()
+        wind_info = [cal_wind_projection(station, target_station, x[0], x[1])*dist_rate for x in wind_info]
+        input_df[f'{short_stt}_wind'] = np.array(wind_info) 
+    
+    if not only_x:
+        return input_df.drop('station_id', axis=1), df.query(qry)[output_cols]
+    else:
+        return input_df
+

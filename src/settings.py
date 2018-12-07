@@ -9,11 +9,22 @@ if os.getcwd().endswith('src'):
     data_root = '../data/'
     output_folder = '../outputs/'
     report_folder = '../report_rc/'
+    model_folder = '../models/'
 else:
     data_root = './data/'
     output_folder = './outputs/'
     report_folder = './report_rc/'
+    model_folder = './models/'
 
+station_list = ['aotizhongxin_aq', 'badaling_aq', 'beibuxinqu_aq', 'daxing_aq',
+                'dingling_aq', 'donggaocun_aq', 'dongsi_aq', 'dongsihuan_aq',
+                'fangshan_aq', 'fengtaihuayuan_aq', 'guanyuan_aq', 'gucheng_aq',
+                'huairou_aq', 'liulihe_aq', 'mentougou_aq', 'miyun_aq',
+                'miyunshuiku_aq', 'nansanhuan_aq', 'nongzhanguan_aq',
+                'pingchang_aq', 'pinggu_aq', 'qianmen_aq', 'shunyi_aq',
+                'tiantan_aq', 'tongzhou_aq', 'wanliu_aq', 'wanshouxigong_aq',
+                'xizhimenbei_aq', 'yanqin_aq', 'yizhuang_aq', 'yongdingmennei_aq',
+                'yongledian_aq', 'yufa_aq', 'yungang_aq', 'zhiwuyuan_aq']
 
 # def read_locale(file_name):
     
@@ -74,17 +85,61 @@ else:
 #         dist_map[f'{stations[0]}-{stations[1]}'] = dist
 #     return dist_map
 
+# def gen_angle_map(station_locale):
+#     '''
+#     return dist_map = {'station1-station2': distance, ...}
+#     '''
+
+#     def cal_angle(longitude1, latitude1, longitude2, latitude2):
+#         x = longitude2-longitude1
+#         y = latitude2-latitude1
+#         if y == 0:
+#             angle = 90.0
+#         else:
+#             tan = x / y
+#             angle = math.atan(tan) * 180 / math.pi
+
+#         # The first quadrant
+#         if y >= 0 and x >= 0:
+#             pass
+#         elif y < 0 and x >= 0:
+#             angle += 180
+#         elif y <= 0 and x < 0:
+#             angle += 180
+#         elif y > 0 and x < 0:
+#             angle += 270  # unit: km
+#         return angle
+
+#     angle_map = {}
+
+#     stations = list(station_locale.keys())
+#     for station_pair in combinations(stations, 2):
+#         longitude1, latitude1 = station_locale[station_pair[0]][0]
+#         longitude2, latitude2 = station_locale[station_pair[1]][0]
+#         angle = cal_angle(longitude1, latitude1, longitude2, latitude2)
+#         stations = station_pair
+#         angle_map[f'{stations[0]}-{stations[1]}'] = angle
+#         angle_map[f'{stations[1]}-{stations[0]}'] = (angle + 180.0) % 360
+#     return angle_map
+
 # station_locale = read_locale('Beijing_AirQuality_Stations_en.xlsx')
 # station_dist = gen_distance_map(station_locale)
+# station_included_angles = gen_angle_map(station_locale)
 
 # with open(os.path.join(output_folder, 'station_locales.json'), 'w') as f:
 #     json.dump(station_locale, f)
 # with open(os.path.join(output_folder, 'station_distances.json'), 'w') as f:
 #     json.dump(station_dist, f)
+# with open(os.path.join(output_folder, 'station_included_angles.json'), 'w') as f:
+#     json.dump(station_included_angles, f)
 
 with open(os.path.join(output_folder, 'station_locales.json'), 'r') as f:
     station_locale = json.load(f)
 with open(os.path.join(output_folder, 'station_distances.json'), 'r') as f:
     station_dist = json.load(f)
+with open(os.path.join(output_folder, 'station_included_angles.json'), 'r') as f:
+    station_angle = json.load(f)
+
+
 
 # print('done')
