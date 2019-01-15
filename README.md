@@ -1,10 +1,5 @@
 # AirQuality Prediction
 
-Group ID: 50
-
-Liyang Ling
-
-2053 7456
 
 ### code
 
@@ -38,7 +33,3 @@ Second is my analysis and processing codes, they cannot be rerun because of the 
 * `models/` : 210 models for prediction
 * `outputs` : partial of my outputs: one for test data & three for reducing calculation complexity
 * report.pdf
-
-
-
-PS: Because the dataset files are too large to email, so I only packaged necessaty files, if you want to run all of my code, please email me to resend those middle data or rerun processing files in above order.
